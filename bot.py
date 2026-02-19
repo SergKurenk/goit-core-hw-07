@@ -22,14 +22,15 @@ class Phone(Field): #Клас для зберігання номера теле�
 
 class Birthday(Field):
     def __init__(self, value):
-        # try:
-        match = re.match(r'^\d{2}.\d{2}.\d{4}$', value)
-        if match is None:
+        try:
+            datetime.strptime(value, "%d.%m.%Y")
+        # match = re.match(r'^\d{2}.\d{2}.\d{4}$', value)
+        # if match is None:
             # raise MyExceptionValueError(f"Invalid phone number format: {value}")
-            raise ValueError(f"Invalid phone number format: {value}")
+            # raise ValueError(f"Invalid phone number format: {value}")
             # converted_birthday = date.strptime(value, "%d.%m.%Y")
-        # except ValueError:
-        #     raise ValueError("Невірний формат дати. Використовуйте DD.MM.YYYY")
+        except ValueError:
+            raise ValueError("Невірний формат дати. Використовуйте DD.MM.YYYY")
         # super().__init__(converted_birthday)
         super().__init__(value)
 
@@ -84,8 +85,8 @@ class Record: #Клас для зберігання інформації про 
         # return f"У контакта: {self.name.value} день народження: {self.birthday.value.strftime("%d.%m.%Y")}, номер телефону: {'; '.join(p.value for p in self.phones)}"
 
 class AddressBook(UserDict): #Клас для зберігання та управління записами.
-    def __init__(self):
-        self.data = {}
+    # def __init__(self):
+    #     self.data = {}
 
     def __str__(self):
         result = "Address Book:\n"
@@ -132,6 +133,8 @@ def input_error_decorator(func):
             return "Недостатньо параметрів для виконання команди. Будь ласка, додайте необхідні аргументи."
         except ValueError:
             return "Невірно введений формат даних."
+        except AttributeError:
+            return "Помилка пошуку даних."
     return inner
 
 def parse_input(user_input: str):
@@ -150,10 +153,8 @@ def change_contact(args, book: AddressBook):
     name, old_phone, new_phone, *_ = args
     record = book.find(name)
     message = "Контакт знайдено."
-    if record is None:
-        raise KeyError
-        # message = "Контакт не знайдено!"
-        # return message
+    # if record is None:
+    #     raise KeyError
 
     if (old_phone or new_phone) is None:
         message = "Невірно вказані номера телефонів"
@@ -202,8 +203,8 @@ def add_birthday(args, book: AddressBook):
 def show_birthday(args, book: AddressBook):
     name, *_ = args
     record = book.find(name)
-    if record is None:
-        raise KeyError
+    # if record is None:
+    #     raise KeyError
     return record.show_birthday()
 
 @input_error_decorator
