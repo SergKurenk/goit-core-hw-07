@@ -190,7 +190,7 @@ def birthdays(args, book):
         return "Найближчими днями днів народжень не знайдено."
 
     s = "У наступних контактів скоро дні народження:\n"
-    s += "\n".join(f"{b["name"]} - {b["birthday"]}\n" for b in birthday_list)
+    s += "\n".join(f"{b["name"]} - {b["birthday"]}" for b in birthday_list)
 
     return s
 
