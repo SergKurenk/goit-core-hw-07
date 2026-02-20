@@ -16,7 +16,6 @@ class Phone(Field): #Клас для зберігання номера теле�
     def __init__(self, value):
         match = re.match(r'^\d{10}$', value)
         if match is None:
-            # raise MyExceptionValueError(f"Invalid phone number format: {value}")
             raise ValueError(f"Invalid phone number format: {value}")
         super().__init__(value)
 
@@ -24,14 +23,8 @@ class Birthday(Field):
     def __init__(self, value):
         try:
             datetime.strptime(value, "%d.%m.%Y")
-        # match = re.match(r'^\d{2}.\d{2}.\d{4}$', value)
-        # if match is None:
-            # raise MyExceptionValueError(f"Invalid phone number format: {value}")
-            # raise ValueError(f"Invalid phone number format: {value}")
-            # converted_birthday = date.strptime(value, "%d.%m.%Y")
         except ValueError:
             raise ValueError("Невірний формат дати. Використовуйте DD.MM.YYYY")
-        # super().__init__(converted_birthday)
         super().__init__(value)
 
 class Record: #Клас для зберігання інформації про контакт, включаючи ім'я та список телефонів.
@@ -45,28 +38,17 @@ class Record: #Клас для зберігання інформації про 
         self.phones.append(phone)
     
     def remove_phone(self, phone_number: str):
-        phone_num = Phone(phone_number)
-        phone = self.find_phone(phone_num.value)
-
-        if phone == None:
-            raise ValueError("Phone number not found.")
+        phone = self.find_phone(phone_number)
         self.phones.remove(phone)
     
     def edit_phone(self, old_phone_number: str, new_phone_number: str):
         new_phone = Phone(new_phone_number)
-        old_phone = Phone(old_phone_number)
-        
-        phone = self.find_phone(old_phone.value)
-
-        if phone is None:
-            raise ValueError("Old phone number not found.")
-
+        phone = self.find_phone(old_phone_number)
         phone.value = new_phone.value
 
     def find_phone(self, phone_number: str):
-        f_phone = Phone(phone_number)
         for phone in self.phones:
-            if phone.value == f_phone.value:
+            if phone.value == phone_number:
                 return phone
         return None
     
@@ -79,15 +61,12 @@ class Record: #Клас для зберігання інформації про 
 
     def __str__(self):
         s = f"У контакта: {self.name.value}"
-        s += f" день народження: {self.birthday.value}" if self.birthday else ""
+        # s += f" день народження: {self.birthday.value}" if self.birthday else ""
         s += f" номер телефону: {'; '.join(p.value for p in self.phones)}" if self.phones else ""
         return s
         # return f"У контакта: {self.name.value} день народження: {self.birthday.value.strftime("%d.%m.%Y")}, номер телефону: {'; '.join(p.value for p in self.phones)}"
 
 class AddressBook(UserDict): #Клас для зберігання та управління записами.
-    # def __init__(self):
-    #     self.data = {}
-
     def __str__(self):
         result = "Address Book:\n"
         for record in self.data:
@@ -109,18 +88,19 @@ class AddressBook(UserDict): #Клас для зберігання та упра
         today = datetime.today()
 
         for record in self.data.values():
-            user_birthday = datetime.strptime(record.birthday.value, "%d.%m.%Y")
-            birthday_this_year = user_birthday.replace(year=today.year)
+            if record.birthday:
+                user_birthday = datetime.strptime(record.birthday.value, "%d.%m.%Y")
+                birthday_this_year = user_birthday.replace(year=today.year)
 
-            if birthday_this_year < today:
-                birthday_this_year = user_birthday.replace(year=today.year+1)
+                if birthday_this_year < today:
+                    birthday_this_year = user_birthday.replace(year=today.year+1)
 
-            if 0 <= (birthday_this_year - today).days <= days:
+                if 0 <= (birthday_this_year - today).days <= days:
 
-                birthday_this_year = adjust_for_weekend(birthday_this_year)
+                    birthday_this_year = adjust_for_weekend(birthday_this_year)
 
-                congratulation_date_str = birthday_this_year.strftime("%d.%m.%Y")
-                upcoming_birthdays.append({"name": record.name.value, "birthday": congratulation_date_str})
+                    congratulation_date_str = birthday_this_year.strftime("%d.%m.%Y")
+                    upcoming_birthdays.append({"name": record.name.value, "birthday": congratulation_date_str})
         return upcoming_birthdays
     
 def input_error_decorator(func):
@@ -153,8 +133,6 @@ def change_contact(args, book: AddressBook):
     name, old_phone, new_phone, *_ = args
     record = book.find(name)
     message = "Контакт знайдено."
-    # if record is None:
-    #     raise KeyError
 
     if (old_phone or new_phone) is None:
         message = "Невірно вказані номера телефонів"
@@ -203,8 +181,6 @@ def add_birthday(args, book: AddressBook):
 def show_birthday(args, book: AddressBook):
     name, *_ = args
     record = book.find(name)
-    # if record is None:
-    #     raise KeyError
     return record.show_birthday()
 
 @input_error_decorator
@@ -214,8 +190,7 @@ def birthdays(args, book):
         return "Найближчими днями днів народжень не знайдено."
 
     s = "У наступних контактів скоро дні народження:\n"
-    for b in birthday_list:
-        s += f"{b["name"]} - {b["birthday"]}\n"
+    s += "\n".join(f"{b["name"]} - {b["birthday"]}\n" for b in birthday_list)
 
     return s
 
@@ -244,19 +219,14 @@ def main():
                 print("Чим я можу вам допомогти?")
             case "add":
                 print(add_contact(args, book))
-                # print(add_contact(contacts, *param))
             case "change":
                 print(change_contact(args, book))
-                # print(change_contact(contacts, *param))
             case "phone":
                 print(show_phone(args, book))
-                # print(show_phone(contacts, *param))
             case 'all':
-                # print(show_contacts(contacts))
                 print(show_contacts(args, book))
             case 'del':
                 print(del_contact(args, book))
-                # print(del_contact(contacts, *param))
             case 'add-birthday':
                 print(add_birthday(args, book))
             case 'show-birthday':
